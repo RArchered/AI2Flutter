@@ -2,7 +2,7 @@ import logging
 import time
 
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import tensorflow as tf
 
 # 位置编码矩阵，输入length为序列长度，depth为单个token向量的长度
