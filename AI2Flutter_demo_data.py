@@ -11,12 +11,12 @@ import random
 1 : text(4) ps:指向一个序号
 4: color(255, 255, 0, 0) ps:这是颜色FFFF0000的编码
 1: size(20)
-1: height(10)
+1: line(10)
 
 一共12个数字
 
 example:
-{"type":"text", "ax":2, "ay":5, "width":20, "height":52, "text":"你好", "color":"FFFF0000", "size":20, "height":10}
+{"type":"text", "ax":2, "ay":5, "width":20, "height":52, "text":"你好", "color":"FFFF0000", "size":20, "line":10}
 按照顺序转换后序列为：
 1, 2, 5, 20, 52, 4, 255, 255, 0, 0, 20, 10
 
@@ -50,7 +50,7 @@ example:
 一共16个数字
 
 example:
-{"type":"TGText", "id":2, "parentId":1, "text":"你好", "color":"FFFF0000", "size":20, "height":10}
+{"type":"TGText", "id":2, "parentId":1, "text":"你好", "color":"FFFF0000", "size":20, "line":10}
 按照顺序转换后向量为：
 [2, 2, 1, 4, 255, 255, 0, 0, 20, 10]
 
@@ -73,6 +73,14 @@ def formatColorStrToInt(target):
     temp.append(int(target[6:8], 16))
     return temp;
 
+def formatColorIntToStr(target):
+    assert len(target) == 4
+    temp = ""
+    temp += "{:02X}".format(target[0])
+    temp += "{:02X}".format(target[1])
+    temp += "{:02X}".format(target[2])
+    temp += "{:02X}".format(target[3])
+    return temp;
 
 # demo_texts_data = [
 #     [20320, 22909, 0, 0, 0, 0, 0], # 你好
