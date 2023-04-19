@@ -139,12 +139,13 @@ def demo_generate_data(num):
         size, line = [random.randint(15, 120) for i in range(2)]
         text = demo_texts_data[random.randint(0, len(demo_texts_data)-1)]
         # color = demo_colors_data[random.randint(0, len(demo_colors_data)-1)]
+        color = [random.randint(0, 255) for i in range(4)];
         # 构建一个输入node
         input_node = []
         input_node.append(1)
         input_node.extend([ax, ay, width, height])
         input_node.append(text)
-        input_node.extend([random.randint(0, 255) for i in range(4)])
+        input_node.extend(color)
         input_node.extend([size, line])
         input_seq.extend(input_node)
 
