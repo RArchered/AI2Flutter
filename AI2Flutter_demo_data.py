@@ -1,8 +1,6 @@
 import tensorflow as tf
 import random
 
-# (tf.zeros((1,3,10)), tf.ones((1,3,20)))
-
 """schema中的text编码
 1: type(1) ps:这是text类型的种类编码
 1: ax(0)
@@ -15,12 +13,12 @@ import random
 1: size(20)
 1: height(10)
 
-一共12维，用0填充到24维
+一共12个数字
 
 example:
 {"type":"text", "ax":2, "ay":5, "width":20, "height":52, "text":"你好", "color":"FFFF0000", "size":20, "height":10}
-按照顺序转换后向量为：
-[1, 2, 5, 20, 52, 4, 255, 255, 0, 0, 20, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+按照顺序转换后序列为：
+1, 2, 5, 20, 52, 4, 255, 255, 0, 0, 20, 10
 
 """
 
@@ -30,12 +28,12 @@ example:
 1: parentId(8) ps:这是祖先节点的id，为0标识没有祖先节点
 4: padding(20, 100, 0, 2) ps:这依次是左20，上100，右0，下2的编码
 
-一共7维，用0填充到24维
+一共7个数字
 
 example:
 {"type":"Padding", "id":1, "parentId":0, "padding":"20, 20, 4, 10"}
 按照顺序转换后向量为：
-[1, 1, 0, 20, 20, 4, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+[1, 1, 0, 20, 20, 4, 10]
 
 """
 
@@ -49,12 +47,12 @@ example:
 1: size(20)
 1: height(10)
 
-一共16维，用0填充到24维
+一共16个数字
 
 example:
 {"type":"TGText", "id":2, "parentId":1, "text":"你好", "color":"FFFF0000", "size":20, "height":10}
 按照顺序转换后向量为：
-[2, 2, 1, 4, 255, 255, 0, 0, 20, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+[2, 2, 1, 4, 255, 255, 0, 0, 20, 10]
 
 """
 
@@ -97,15 +95,15 @@ def formatColorStrToInt(target):
 #    "我是你的", "鸡你太美", "vscode", "vs studio", "append", "正确的",
 #    "Documents"
 # ]
-demo_texts_pool_length = 30
+demo_texts_pool_length = 60
 demo_texts_data = [i for i in range(1, demo_texts_pool_length)]
 demo_colors = [
     "FFFF0000", "FF00FF00", "FF00FFAB", "FF8E8E93", "00FFAA8E", "00F38989", "34565634",
     "F087895F", "00000000", "F6786548", "98765678", "87654879", "F2565656", "FF242424"
 ]
 demo_colors_data = [formatColorStrToInt(i) for i in demo_colors]
-input_seq_dim = 24
-output_seq_dim = 24
+
+
 
 def process_output_data(output_data):
     out_data = []
@@ -113,11 +111,12 @@ def process_output_data(output_data):
     for seq in output_data:
         out_data_seq = []
         out_label_seq = []
-        out_data_seq.append([-1 for i in range(output_seq_dim)])
-        for node in seq:
-            out_data_seq.append(node)
-            out_label_seq.append(node)
-        out_label_seq.append([-2 for i in range(output_seq_dim)])
+        # 997作为数据开始，998作为数据结束
+        out_data_seq.append(997)
+        for num in seq:
+            out_data_seq.append(num)
+            out_label_seq.append(num)
+        out_label_seq.append(998)
         out_data.append(out_data_seq)
         out_label.append(out_label_seq)
     return [out_data, out_label]
@@ -131,25 +130,23 @@ def demo_generate_data(num):
         input_seq = []
         output_seq = []
         # 随机取各种属性
-        ax, ay = [random.randint(0, 50) for i in range(2)]
+        ax, ay = [random.randint(0, 200) for i in range(2)]
         # 绝对位置有一定几率为0‰
         if (random.randint(0, 5) == 0):
             ax = 0
             ay = 0
         width, height = [random.randint(20, 100) for i in range(2)]
-        size, line = [random.randint(15, 30) for i in range(2)]
+        size, line = [random.randint(15, 120) for i in range(2)]
         text = demo_texts_data[random.randint(0, len(demo_texts_data)-1)]
-        color = demo_colors_data[random.randint(0, len(demo_colors_data)-1)]
+        # color = demo_colors_data[random.randint(0, len(demo_colors_data)-1)]
         # 构建一个输入node
         input_node = []
         input_node.append(1)
         input_node.extend([ax, ay, width, height])
         input_node.append(text)
-        input_node.extend(color)
+        input_node.extend([random.randint(0, 255) for i in range(4)])
         input_node.extend([size, line])
-        while (len(input_node) < input_seq_dim):
-            input_node.append(0)
-        input_seq.append(input_node)
+        input_seq.extend(input_node)
 
         # 构建输出node
         if (ax == 0 and ay == 0):
@@ -159,16 +156,13 @@ def demo_generate_data(num):
             output_node.append(text)
             output_node.extend(color)
             output_node.extend([size, line])
-            while (len(output_node) < output_seq_dim):
-                output_node.append(0)
-            output_seq.append(output_node)
+            output_seq.extend(output_node)
         else:
             # 构建Padding节点，type为1，id为1，parentId为0
             output_node = []
             output_node.extend([1, 1, 0, ax, ay, 0, 0])
-            while (len(output_node) < output_seq_dim):
-                output_node.append(0)
-            output_seq.append(output_node)
+            output_seq.extend(output_node)
+            output_seq.append(999)
 
             # TGButton节点，type为2，id为2，parentId为1
             output_node = []
@@ -176,12 +170,7 @@ def demo_generate_data(num):
             output_node.append(text)
             output_node.extend(color)
             output_node.extend([size, line])
-            while (len(output_node) < output_seq_dim):
-                output_node.append(0)
-            output_seq.append(output_node) 
-        # 构建序列，打乱序列
-        random.shuffle(input_seq)
-        random.shuffle(output_seq)
+            output_seq.extend(output_node) 
         # 加到训练集
         input_seqs.append(input_seq)
         output_seqs.append(output_seq)

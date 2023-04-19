@@ -33,25 +33,24 @@ class PositionalEmbedding(tf.keras.layers.Layer):
     pos_encoding: 位置矩阵
   """
   
-  def __init__(self, node_dim, d_model):
+  def __init__(self, vocab, d_model):
     super().__init__()
     self.d_model = d_model
     # 使用全链接层对输入向量（已经编码）映射到模型的维度
-    self.embedding = tf.keras.layers.Dense(d_model, activation='relu') 
-    self.pos_encoding = positional_encoding(length=512, depth=d_model)
+    self.embedding = tf.keras.layers.Embedding(vocab, d_model) 
+    self.pos_encoding = positional_encoding(length=2048, depth=d_model)
 
   def compute_mask(self, *args, **kwargs):
     return self.embedding.compute_mask(*args, **kwargs)
 
   def call(self, x):
-    # length = tf.shape(x)[1]
+    length = tf.shape(x)[1]
     # print(tf.shape(x))
     # 降维
     x = self.embedding(x)
     # 降低模型的量级，尽量使得位置编码生效
     x *= tf.math.sqrt(tf.cast(self.d_model, tf.float32))
-    # x = x + self.pos_encoding[tf.newaxis, :length, :]
-    # x = tf.expand_dims(x, 0)
+    x = x + self.pos_encoding[tf.newaxis, :length, :]
     return x
 
 class BaseAttention(tf.keras.layers.Layer):
@@ -182,7 +181,7 @@ class EncoderLayer(tf.keras.layers.Layer):
 
 class Encoder(tf.keras.layers.Layer):
   def __init__(self, *, num_layers, d_model, num_heads,
-               dff, node_dim, dropout_rate=0.1):
+               dff, input_vocab, dropout_rate=0.1):
     """Transformer整个编码器模块
 
     Args:
@@ -198,7 +197,7 @@ class Encoder(tf.keras.layers.Layer):
     self.d_model = d_model
     self.num_layers = num_layers
     self.pos_embedding = PositionalEmbedding(
-        node_dim=node_dim, d_model=d_model)
+        vocab=input_vocab, d_model=d_model)
     self.enc_layers = [
         EncoderLayer(d_model=d_model,
                      num_heads=num_heads,
@@ -258,7 +257,7 @@ class DecoderLayer(tf.keras.layers.Layer):
     return x
 
 class Decoder(tf.keras.layers.Layer):
-  def __init__(self, *, num_layers, d_model, num_heads, dff, node_dim,
+  def __init__(self, *, num_layers, d_model, num_heads, dff, output_vocab,
                dropout_rate=0.1):
     """Transformer整个解码器模块
 
@@ -274,7 +273,7 @@ class Decoder(tf.keras.layers.Layer):
     self.d_model = d_model
     self.num_layers = num_layers
 
-    self.pos_embedding = PositionalEmbedding(node_dim=node_dim,
+    self.pos_embedding = PositionalEmbedding(vocab=output_vocab,
                                              d_model=d_model)
     self.dropout = tf.keras.layers.Dropout(dropout_rate)
     self.dec_layers = [
@@ -302,19 +301,19 @@ class Decoder(tf.keras.layers.Layer):
 # output_size为最终输出的向量的维数，在文本翻译过程中是词向量的长度，但在这里是flutter组件节点向量
 class Transformer(tf.keras.Model):
   def __init__(self, *, num_layers, d_model, num_heads, dff,
-               input_node_dim, target_node_dim, dropout_rate=0.1):
+               input_vocab, output_vocab, dropout_rate=0.1):
     super().__init__()
     self.encoder = Encoder(num_layers=num_layers, d_model=d_model,
                            num_heads=num_heads, dff=dff,
-                           node_dim=input_node_dim,
+                           input_vocab=input_vocab,
                            dropout_rate=dropout_rate)
 
     self.decoder = Decoder(num_layers=num_layers, d_model=d_model,
                            num_heads=num_heads, dff=dff,
-                           node_dim=target_node_dim,
+                           output_vocab=output_vocab,
                            dropout_rate=dropout_rate)
 
-    self.final_layer = tf.keras.layers.Dense(target_node_dim)
+    self.final_layer = tf.keras.layers.Dense(output_vocab)
 
   def call(self, inputs):
     # To use a Keras model with `.fit` you must pass all your inputs in the
