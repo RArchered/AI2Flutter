@@ -203,7 +203,7 @@ flutter_nodes_description = {
     "TGButton": flutter_tgButton_node
 }
 
-text_poll = [
+text_pool = [
     "你好", "我爱Python", "Flutter", "英雄联盟手游", "王者荣耀",
  "abcdefg", "测试demo", "demo测试", "AI2Flutter", "tensor",
   "中文编程", "", "avvwwe", "我i完成", "宋啊好吃呢", "澳产德拉克",
@@ -214,7 +214,7 @@ text_poll = [
 imgSrc_pool = ["https://www.baidu.com", "https://weini.com"]
 
 
-def encode_node(content_dict, node_category):
+def encode_node(content_dict, node_category, text_pool, imgSrc_pool):
     re = []
     node_discription = []
     type_dict = {}
@@ -232,14 +232,14 @@ def encode_node(content_dict, node_category):
         elif (key == "radius"):
             re.extend(formatStrToIntList(content_dict[key]))
         elif (key == "text"):
-            re.append(text_poll.index(content_dict[key]))
+            re.append(text_pool.index(content_dict[key]))
         elif (key == "imgSrc"):
             re.append(imgSrc_pool.index(content_dict[key]))
         else:
             re.append(content_dict[key])
     return re
 
-def decode_node(content_vec, node_category):
+def decode_node(content_vec, node_category,  text_pool, imgSrc_pool):
     re = {}
     node_discription = []
     type_dict = {}
@@ -264,7 +264,7 @@ def decode_node(content_vec, node_category):
             re[key] = formatIntListToStr(content_vec[pointer : pointer+4])
             pointer += 4
         elif (key == "text"):
-            re[key] = text_poll[content_vec[pointer]]
+            re[key] = text_pool[content_vec[pointer]]
             pointer += 1
         elif (key == "imgSrc"):
             re[key] = imgSrc_pool[content_vec[pointer]]
@@ -273,25 +273,6 @@ def decode_node(content_vec, node_category):
             re[key] = content_vec[pointer]
             pointer += 1
     return re
-    re = {}
-    node_type = schema_text_vec[0]
-    ax = schema_text_vec[1]
-    ay = schema_text_vec[2]
-    width = schema_text_vec[3]
-    height = schema_text_vec[4]
-    text = schema_text_vec[5]
-    color = schema_text_vec[6:10]
-    size = schema_text_vec[10]
-    line = schema_text_vec[11]
-    re[schema_nodes_decode[node_type]] = node_type
-    re["ax"] = ax
-    re["ay"] = ay
-    re["width"] = width
-    re["height"] = height
-    re["text"] = text
-    re["color"] = formatColorIntToStr(color)
-    re["size"] = size
-    re["line"] = line
 
 
 
