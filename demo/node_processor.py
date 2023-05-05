@@ -104,6 +104,8 @@ example:
 1: type(5) ps:这是TGRadiusImage类型的种类编码
 1: id(3) ps:这是当前节点的唯一标识
 1: parentId(0) ps:这是祖先节点的id，为0标识没有祖先节点
+1: width(20)
+1: height(10)
 1: imgSrc(4)
 """
 
@@ -111,6 +113,9 @@ example:
 1: type(6) ps:这是TGRadiusImage类型的种类编码
 1: id(3) ps:这是当前节点的唯一标识
 1: parentId(0) ps:这是祖先节点的id，为0标识没有祖先节点
+1: width(0)
+1: height(0)
+4: color(255, 255, 0, 0) ps:这是颜色FFFF0000的编码
 4: radius(12, 12, 12, 12)
 1: imgSrc(1)
 """
@@ -172,8 +177,8 @@ flutter_padding_node = ["type", "id", "parentId", "padding"]
 flutter_tgText_node = ["type", "id", "parentId", "text", "color", "size", "height"]
 flutter_row_node = ["type", "id", "parentId"]
 flutter_spacer_node = ["type", "id", "parentId"]
-flutter_tgRadiusImage_node = ["type", "id", "parentId", "imgSrc"]
-flutter_container_node = ["type", "id", "parentId", "color", "radius", "imgSrc"]
+flutter_tgRadiusImage_node = ["type", "id", "parentId", "width", "height", "imgSrc"]
+flutter_container_node = ["type", "id", "parentId", "width", "height", "color", "radius", "imgSrc"]
 flutter_tgButton_node = ["type", "id", "parentId", "width", "height", "color", "text"]
 
 # node对于的type数字
@@ -264,10 +269,17 @@ def decode_node(content_vec, node_category,  text_pool, imgSrc_pool):
             re[key] = formatIntListToStr(content_vec[pointer : pointer+4])
             pointer += 4
         elif (key == "text"):
-            re[key] = text_pool[content_vec[pointer]]
+            # 超出常量池范围，便使用最后一个常量
+            re[key] = text_pool[
+                content_vec[pointer] 
+                if content_vec[pointer] < len(text_pool)
+                else len(text_pool)-1]
             pointer += 1
         elif (key == "imgSrc"):
-            re[key] = imgSrc_pool[content_vec[pointer]]
+            re[key] = imgSrc_pool[
+                content_vec[pointer] 
+                if content_vec[pointer] < len(imgSrc_pool)
+                else len(imgSrc_pool)-1]
             pointer += 1
         else:
             re[key] = content_vec[pointer]
