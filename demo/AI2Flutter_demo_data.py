@@ -153,3 +153,42 @@ def generate_tgButton_data(num):
         # 生成输入和标签
         processed_output = process_output_data(output_seqs)
     return [input_seqs, processed_output[0], processed_output[1]]
+
+# 生成image构成的样本
+# 输出input、output、label三个数据，均为二维数组，一是batch，二是每一个节点序列
+def generate_image_data(num):
+    input_seqs = []
+    output_seqs = []
+    img_pool_len = 40
+    for i in range(0, num):
+        input_seq = []
+        output_seq = []
+        # 随机取各种属性
+        ax, ay = [random.randint(0, 200) for i in range(2)]
+        if (random.randint(0, 3) == 0):
+            ax, ay = [random.randint(0, 32) for i in range(2)]
+        width, height = [random.randint(20, 360) for i in range(2)]
+        radius = [random.randint(0, 16) for i in range(4)]
+        imgSrc = random.randint(0, img_pool_len)
+        # 构建一个Schema layer node
+        input_node = []
+        input_node.append(3)
+        input_node.extend([ax, ay, width, height])
+        input_node.extend(radius)
+        input_node.append(imgSrc)
+        input_seq.extend(input_node)
+
+        # 构建输出node
+        # Flutter Container节点，type为2，id为1，parentId为0
+        output_node = []
+        output_node.extend([5, 1, 0])
+        output_node.extend([width, height])
+        output_node.extend(radius)
+        output_node.append(imgSrc)
+        output_seq.extend(output_node)
+        # 加到训练集
+        input_seqs.append(input_seq)
+        output_seqs.append(output_seq)
+        # 生成输入和标签
+        processed_output = process_output_data(output_seqs)
+    return [input_seqs, processed_output[0], processed_output[1]]

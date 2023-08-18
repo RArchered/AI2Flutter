@@ -39,6 +39,7 @@ example:
 1: ay(0)
 1: width(20)
 1: height(10)
+4: radius(12, 12, 12, 12) ps:这是左上右下的圆角编码
 1: imgSrc(1) ps:指向一个常量序号
 """
 
@@ -106,6 +107,7 @@ example:
 1: parentId(0) ps:这是祖先节点的id，为0标识没有祖先节点
 1: width(20)
 1: height(10)
+4: radius(12, 12, 12, 12) ps:这是左上右下的圆角编码
 1: imgSrc(4)
 """
 
@@ -170,14 +172,14 @@ def formatStrToIntList(target):
 # node描述
 schema_text_node = ["type", "ax", "ay", "width", "height", "text", "color", "size", "line"]
 schema_layer_node = ["type", "ax", "ay", "width", "height", "color", "radius", "imgSrc"]
-schema_image_node = ["type", "ax", "ay", "width", "height", "imgSrc"]
+schema_image_node = ["type", "ax", "ay", "width", "height", "radius", "imgSrc"]
 schema_tgButton_node = ["type", "ax", "ay", "width", "height", "color", "text"]
 
 flutter_padding_node = ["type", "id", "parentId", "padding"]
 flutter_tgText_node = ["type", "id", "parentId", "text", "color", "size", "height"]
 flutter_row_node = ["type", "id", "parentId"]
 flutter_spacer_node = ["type", "id", "parentId"]
-flutter_tgRadiusImage_node = ["type", "id", "parentId", "width", "height", "imgSrc"]
+flutter_tgRadiusImage_node = ["type", "id", "parentId", "width", "height", "radius", "imgSrc"]
 flutter_container_node = ["type", "id", "parentId", "width", "height", "color", "radius", "imgSrc"]
 flutter_tgButton_node = ["type", "id", "parentId", "width", "height", "color", "text"]
 
